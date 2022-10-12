@@ -7,4 +7,4 @@
 ##### Application Scope:
 
 - S15: Adding Authentication
-- Topics discussed: Implement authentication with Sesion & Cookies, Encrypting Passwords, Add SignIn & SignOut Functionalities, Route Protection, CSRF Token & Adding CSRF Protection
+- Topics discussed: Implement authentication with Sesion & Cookies, Password Encryption using bcryptjs, Add SignIn & SignOut Functionalities, Route Protection, Adding CSRF Protection using csurf, Adding Authentication Feedbacks using connect-flash
