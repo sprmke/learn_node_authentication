@@ -1,13 +1,19 @@
 const bcrypt = require('bcryptjs');
 const User = require('../models/user');
 
-exports.getLogin = (req, res, next) => {
-  let errorMessage = req.flash('loginErrorMessage');
+const getErrorMessage = (req) => {
+  let errorMessage = req.flash('errorMessage');
   if (errorMessage.length > 0) {
     errorMessage = errorMessage[0];
   } else {
     errorMessage = null;
   }
+
+  return errorMessage;
+};
+
+exports.getLogin = (req, res, next) => {
+  const errorMessage = getErrorMessage(req);
 
   res.render('auth/login', {
     path: '/login',
@@ -17,9 +23,12 @@ exports.getLogin = (req, res, next) => {
 };
 
 exports.getSignup = (req, res, next) => {
+  const errorMessage = getErrorMessage(req);
+
   res.render('auth/signup', {
     path: '/signup',
     pageTitle: 'Signup',
+    errorMessage,
   });
 };
 
@@ -29,8 +38,10 @@ exports.postLogin = (req, res, next) => {
   User.findOne({ email })
     .then((user) => {
       if (!user) {
-        req.flash('loginErrorMessage', 'Invalid email or password.');
-        return res.redirect('/login');
+        req.flash('errorMessage', 'Invalid email or password.');
+        return req.session.save((error) => {
+          return res.redirect('/login');
+        });
       }
 
       // validate password
@@ -42,11 +53,14 @@ exports.postLogin = (req, res, next) => {
             req.session.isLoggedIn = true;
             req.session.user = user;
             return req.session.save((err) => {
-              console.log(err);
               res.redirect('/');
             });
           }
-          res.redirect('/login');
+
+          req.flash('errorMessage', 'Invalid email or password.');
+          return req.session.save((err) => {
+            res.redirect('/login');
+          });
         })
         .catch((err) => {
           console.log(err);
@@ -64,7 +78,12 @@ exports.postSignup = (req, res, next) => {
   User.findOne({ email })
     .then((user) => {
       // if user email already exist, redirect to signup page
-      if (user) return res.redirect('/signup');
+      if (user) {
+        req.flash('errorMessage', 'Email already exists.');
+        return req.session.save((error) => {
+          res.redirect('/signup');
+        });
+      }
 
       // encrypt password
       return bcrypt
@@ -81,7 +100,13 @@ exports.postSignup = (req, res, next) => {
         })
         .then((result) => res.redirect('/login'));
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      console.log(err);
+      req.flash('errorMessage', 'Email is required.');
+      return req.session.save((error) => {
+        res.redirect('/signup');
+      });
+    });
 };
 
 exports.postLogout = (req, res, next) => {
