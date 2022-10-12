@@ -5,6 +5,7 @@ exports.getLogin = (req, res, next) => {
   res.render('auth/login', {
     path: '/login',
     pageTitle: 'Login',
+    errorMessage: req.flash('loginErrorMessage'),
   });
 };
 
@@ -21,6 +22,7 @@ exports.postLogin = (req, res, next) => {
   User.findOne({ email })
     .then((user) => {
       if (!user) {
+        req.flash('loginErrorMessage', 'Invalid email or password.');
         return res.redirect('/login');
       }
 
