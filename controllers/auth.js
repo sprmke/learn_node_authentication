@@ -41,19 +41,20 @@ exports.postSignup = (req, res, next) => {
       if (user) return res.redirect('/signup');
 
       // encrypt password
-      return bcrypt.hash(password, 12);
-    })
-    .then((encryptedPassword) => {
-      // create new user
-      const user = new User({
-        email,
-        password: encryptedPassword,
-        cart: { items: [] },
-      });
+      return bcrypt
+        .hash(password, 12)
+        .then((encryptedPassword) => {
+          // create new user
+          const user = new User({
+            email,
+            password: encryptedPassword,
+            cart: { items: [] },
+          });
 
-      return user.save();
+          return user.save();
+        })
+        .then((result) => res.redirect('/login'));
     })
-    .then((result) => res.redirect('/login'))
     .catch((err) => console.log(err));
 };
 
