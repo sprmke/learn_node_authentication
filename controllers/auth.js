@@ -1,3 +1,4 @@
+const bcrypt = require('bcryptjs');
 const User = require('../models/user');
 
 exports.getLogin = (req, res, next) => {
@@ -35,14 +36,18 @@ exports.postSignup = (req, res, next) => {
   // add validation here
 
   User.findOne({ email })
-    .then((userDoc) => {
+    .then((user) => {
       // if user email already exist, redirect to signup page
-      if (userDoc) return res.redirect('/signup');
+      if (user) return res.redirect('/signup');
 
+      // encrypt password
+      return bcrypt.hash(password, 12);
+    })
+    .then((encryptedPassword) => {
       // create new user
       const user = new User({
         email,
-        password,
+        password: encryptedPassword,
         cart: { items: [] },
       });
 
