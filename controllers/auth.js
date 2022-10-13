@@ -195,3 +195,25 @@ const sendResetPasswordEmail = async (email, token) => {
   // Preview only available when sending through an Ethereal account
   console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
 };
+
+exports.getNewPassword = (req, res, next) => {
+  const { token } = req.params;
+
+  User.findOne({
+    resetToken: token,
+    resetTokenExpiration: { $gt: Date.now() },
+  })
+    .then((user) => {
+      const errorMessage = getErrorMessage(req);
+
+      res.render('auth/new-password', {
+        path: '/new-password',
+        pageTitle: 'New Password',
+        errorMessage,
+        userId: user._id.toString(),
+      });
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+};
