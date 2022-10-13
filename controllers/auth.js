@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const User = require('../models/user');
 
@@ -123,5 +124,35 @@ exports.getReset = (req, res, next) => {
     path: '/reset',
     pageTitle: 'Reset Password',
     errorMessage,
+  });
+};
+
+exports.postReset = (req, res, next) => {
+  crypto.randomBytes(32, (err, buffer) => {
+    if (err) {
+      console.log(err);
+      return res.redirect('/reset');
+    }
+    const token = buffer.toString('hex');
+
+    User.findOne({ email: req.body.email })
+      .then((user) => {
+        if (!user) {
+          req.flash('errorMessage', 'User with provided email is not found.');
+          return res.redirect('/reset');
+        }
+
+        // save reset token data to user
+        const ONE_HOUR_IN_MS = 3600000;
+        user.resetToken = token;
+        user.resetTokenExpiration = Date.now() + ONE_HOUR_IN_MS;
+        return user.save();
+      })
+      .then((result) => {
+        // send emails
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   });
 };
