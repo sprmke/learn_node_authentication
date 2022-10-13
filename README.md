@@ -1,4 +1,4 @@
-# Learn Node: Adding Authentication
+# Learn Node: Adding Basic & Advanced Authentication
 
 ##### Course:
 
@@ -6,5 +6,5 @@
 
 ##### Application Scope:
 
-- S15: Adding Authentication
-- Topics discussed: Implement authentication with Session & Cookies, Password Encryption using bcryptjs, Add SignIn & SignOut Functionalities, Route Protection, Adding CSRF Protection using csurf, Adding Authentication Feedbacks using connect-flash
+- S15&17: Adding Basic & Advanced Authentication
+- Topics discussed: Implement authentication with Session & Cookies, Password Encryption using bcryptjs, Add SignIn & SignOut Functionalities, Route Protection, Adding CSRF Protection using csurf, Adding Authentication Feedbacks using connect-flash, Resetting Passwords, Implement Authorization, Adding protection to Post Actions
