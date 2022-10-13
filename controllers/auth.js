@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+const nodemailer = require('nodemailer');
 const bcrypt = require('bcryptjs');
 const User = require('../models/user');
 
@@ -138,8 +139,11 @@ exports.postReset = (req, res, next) => {
     User.findOne({ email: req.body.email })
       .then((user) => {
         if (!user) {
-          req.flash('errorMessage', 'User with provided email is not found.');
-          return res.redirect('/reset');
+          req.flash('errorMessage', 'No account with that email found.');
+
+          return req.session.save((err) => {
+            res.redirect('/reset');
+          });
         }
 
         // save reset token data to user
@@ -148,11 +152,46 @@ exports.postReset = (req, res, next) => {
         user.resetTokenExpiration = Date.now() + ONE_HOUR_IN_MS;
         return user.save();
       })
-      .then((result) => {
-        // send emails
+      .then(async (result) => {
+        if (result) {
+          res.redirect('/');
+
+          // send reset password email
+          await sendResetPasswordEmail(req.body.email, token);
+        }
       })
       .catch((err) => {
         console.log(err);
       });
   });
+};
+
+const sendResetPasswordEmail = async (email, token) => {
+  let testAccount = await nodemailer.createTestAccount();
+
+  let transporter = nodemailer.createTransport({
+    host: 'smtp.ethereal.email',
+    port: 587,
+    secure: false,
+    auth: {
+      user: testAccount.user,
+      pass: testAccount.pass,
+    },
+  });
+
+  let info = await transporter.sendMail({
+    from: '"Mike Cutie 👻" <mike@cutie.com>',
+    to: email,
+    subject: 'Password Reset',
+    text: 'Password Reset!',
+    html: `
+      <p>You requested a password reset</p>
+      <p>Click this <a href="http://localhost:3000/reset/${token}">link</a> to set a new password</p>
+    `,
+  });
+
+  console.log('Message sent: %s', info.messageId);
+
+  // Preview only available when sending through an Ethereal account
+  console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
 };
